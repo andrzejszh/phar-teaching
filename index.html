@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pharmacology Teaching</title>
+  <meta name="description" content="Teaching materials for pharmacology: lectures, notes and self-study resources.">
+  <style>
+    :root {
+      --bg: #fafaf8;
+      --surface: #ffffff;
+      --text: #1f2328;
+      --muted: #5b636e;
+      --accent: #0f766e;
+      --border: #e3e5e8;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #14171a;
+        --surface: #1c2024;
+        --text: #e6e8eb;
+        --muted: #9aa3ad;
+        --accent: #2dd4bf;
+        --border: #2c3238;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      line-height: 1.6;
+      background: var(--bg);
+      color: var(--text);
+    }
+    .wrap { max-width: 880px; margin: 0 auto; padding: 0 16px; }
+    header { padding: 56px 0 32px; border-bottom: 1px solid var(--border); }
+    header h1 { margin: 0 0 8px; font-size: clamp(1.8rem, 4vw, 2.6rem); }
+    header p { margin: 0; color: var(--muted); max-width: 60ch; }
+    main { padding: 32px 0 48px; }
+    h2 { font-size: 1.25rem; margin: 32px 0 16px; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 16px;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 20px;
+    }
+    .card h3 { margin: 0 0 6px; font-size: 1.05rem; }
+    .card p { margin: 0; color: var(--muted); font-size: 0.95rem; }
+    a { color: var(--accent); }
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 20px 0 32px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <h1>Pharmacology Teaching</h1>
+      <p>Lecture materials, notes and self-study resources for pharmacology courses.</p>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <h2>Topics</h2>
+    <div class="grid">
+      <div class="card">
+        <h3>General Pharmacology</h3>
+        <p>Pharmacokinetics, pharmacodynamics, receptors and dose–response.</p>
+      </div>
+      <div class="card">
+        <h3>Autonomic Nervous System</h3>
+        <p>Cholinergic and adrenergic drugs, agonists and antagonists.</p>
+      </div>
+      <div class="card">
+        <h3>Cardiovascular Drugs</h3>
+        <p>Antihypertensives, antiarrhythmics, heart failure and lipid-lowering agents.</p>
+      </div>
+      <div class="card">
+        <h3>CNS Pharmacology</h3>
+        <p>Anxiolytics, antidepressants, antipsychotics, antiepileptics and analgesics.</p>
+      </div>
+      <div class="card">
+        <h3>Chemotherapy</h3>
+        <p>Antibacterial, antiviral, antifungal and anticancer drugs.</p>
+      </div>
+      <div class="card">
+        <h3>Endocrine Pharmacology</h3>
+        <p>Insulin and antidiabetics, corticosteroids, thyroid and sex hormones.</p>
+      </div>
+    </div>
+
+    <h2>Resources</h2>
+    <ul>
+      <li>Lecture slides — coming soon</li>
+      <li>Self-assessment quizzes — coming soon</li>
+      <li>Drug classification tables — coming soon</li>
+    </ul>
+  </main>
+
+  <footer>
+    <div class="wrap">© 2026 Andrzej Szewczak · Hosted on GitHub Pages</div>
+  </footer>
+</body>
+</html>
