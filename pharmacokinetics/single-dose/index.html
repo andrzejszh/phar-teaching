@@ -1,0 +1,892 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css"
+    />
+    <title>Single-dose Administration</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap"
+      rel="stylesheet"
+    />
+    <!--
+      Styling adapted from Explorables by Theo-BRN
+      (https://github.com/Theo-BRN/Explorables), code under the MIT License.
+    -->
+    <style>
+      /* Layout: left = route switch, C–t graph, sliders, live equation; right = compartment schematic. Stacks on phones. */
+      :root {
+        --paper: #f5f7fa;
+        --ink: #1d2733;
+        --muted: #5b6878;
+        --r: #2f6fb3;
+        --nr: #b0422e;
+        --rule: #d5dce5;
+        --tint: #dde8f5;
+        --cyto: #eaeef3;
+        --serif: "Source Serif 4", Georgia, serif;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme="light"]) {
+          --paper: #141a21;
+          --ink: #e3e8ee;
+          --muted: #93a0b0;
+          --r: #7fb1ea;
+          --nr: #ec8a74;
+          --rule: #2c3643;
+          --tint: #1f3149;
+          --cyto: #19212a;
+          color-scheme: dark;
+        }
+      }
+      :root[data-theme="dark"] {
+        --paper: #141a21;
+        --ink: #e3e8ee;
+        --muted: #93a0b0;
+        --r: #7fb1ea;
+        --nr: #ec8a74;
+        --rule: #2c3643;
+        --tint: #1f3149;
+        --cyto: #19212a;
+        color-scheme: dark;
+      }
+      body {
+        margin: 0;
+        background: var(--paper);
+        color: var(--ink);
+        font: 1.0625rem/1.65 var(--serif);
+      }
+      main {
+        max-width: 72rem;
+        margin: 0 auto;
+        padding-block: 2.5rem;
+        padding-inline: 1.25rem;
+      }
+      h1 {
+        font-weight: 600;
+        font-size: 1.7rem;
+        line-height: 1.2;
+        margin: 0;
+      }
+      .grid {
+        display: grid;
+        gap: 2rem 3rem;
+        margin-top: 1.75rem;
+        align-items: start;
+      }
+      @media (min-width: 58rem) {
+        .grid {
+          grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+        }
+      }
+      .left,
+      .right {
+        min-width: 0;
+      }
+      svg {
+        width: 100%;
+        height: auto;
+        display: block;
+      }
+
+      label {
+        display: grid;
+        grid-template-columns: 2.5rem 1fr 7.5rem;
+        align-items: center;
+        gap: 1rem;
+        margin: 0.6rem 0;
+        transition: opacity 0.2s;
+      }
+      label > span:first-child {
+        font-style: italic;
+      }
+      label > span:last-child {
+        text-align: right;
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+      }
+      label.off {
+        opacity: 0.4;
+      }
+      input[type="range"] {
+        width: 100%;
+        accent-color: var(--ink);
+      }
+      input[type="range"]:focus-visible {
+        outline: 2px solid var(--r);
+        outline-offset: 4px;
+      }
+      .sliders {
+        margin-top: 0.5rem;
+      }
+      .note {
+        margin: 0.25rem 0 0;
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+      .formula {
+        font-size: 1.1rem;
+        overflow-x: auto;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--rule);
+      }
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(6.5rem, 1fr));
+        gap: 0.75rem 1rem;
+        margin-top: 0.75rem;
+        padding-top: 0.9rem;
+        border-top: 1px solid var(--rule);
+      }
+      .stats div {
+        display: grid;
+        gap: 0.05rem;
+      }
+      .stats .k {
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+      .stats .k i {
+        font-style: italic;
+      }
+      .stats .v {
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+      }
+      .stats [hidden] {
+        display: none;
+      }
+
+      /* graph */
+      #graph {
+        cursor: crosshair;
+        touch-action: none;
+        user-select: none;
+        -webkit-user-select: none;
+      }
+      .axis {
+        stroke: var(--muted);
+        stroke-width: 1;
+      }
+      .grid-l {
+        stroke: var(--rule);
+        stroke-width: 1;
+      }
+      .tick {
+        fill: var(--muted);
+        font: 12px var(--serif);
+        text-anchor: middle;
+      }
+      .tick.y {
+        text-anchor: end;
+        dominant-baseline: central;
+      }
+      .alabel {
+        fill: var(--muted);
+        font: italic 14px var(--serif);
+        text-anchor: middle;
+      }
+      .curve {
+        fill: none;
+        stroke: var(--r);
+        stroke-width: 2.5;
+      }
+      .ctrl {
+        fill: none;
+        stroke: var(--muted);
+        stroke-width: 2;
+        stroke-dasharray: 7 4;
+      }
+      .guide {
+        stroke: var(--nr);
+        stroke-width: 1.25;
+        stroke-dasharray: 3 4;
+        fill: none;
+      }
+      .guidel {
+        fill: var(--nr);
+        font: 13px var(--serif);
+        paint-order: stroke;
+        stroke: var(--paper);
+        stroke-width: 4px;
+      }
+      .drop {
+        stroke: var(--ink);
+        stroke-width: 1;
+        stroke-dasharray: 2 3;
+        opacity: 0.5;
+        fill: none;
+      }
+      .pt {
+        fill: var(--paper);
+        stroke: var(--ink);
+        stroke-width: 2.5;
+      }
+
+      .under {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.5rem 1rem;
+        margin-top: 0.25rem;
+      }
+      .legend {
+        display: flex;
+        gap: 1.25rem;
+        font-size: 0.9rem;
+        color: var(--muted);
+      }
+      .legend span {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+      }
+      .legend span[hidden] {
+        display: none;
+      }
+      .legend svg {
+        width: 1.6rem;
+        height: 0.5rem;
+      }
+
+      /* route switch: IV bolus vs oral */
+      .view {
+        display: flex;
+        margin-bottom: 0.75rem;
+      }
+      .view button {
+        font: 0.75rem var(--serif);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+        background: transparent;
+        border: 1px solid var(--rule);
+        padding: 0.2rem 0.65rem;
+        cursor: pointer;
+      }
+      .view button:first-child {
+        border-radius: 4px 0 0 4px;
+      }
+      .view button:last-child {
+        border-left: none;
+        border-radius: 0 4px 4px 0;
+      }
+      .view button:hover {
+        color: var(--ink);
+      }
+      .view button[aria-pressed="true"] {
+        background: var(--tint);
+        color: var(--ink);
+      }
+      .view button:focus-visible {
+        outline: 2px solid var(--r);
+        outline-offset: 2px;
+      }
+
+      .xscale {
+        display: flex;
+        justify-content: flex-end;
+      }
+      .xscale button {
+        font: 0.75rem var(--serif);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+        background: transparent;
+        border: 1px solid var(--rule);
+        padding: 0.2rem 0.65rem;
+        cursor: pointer;
+      }
+      .xscale button:first-child {
+        border-radius: 4px 0 0 4px;
+      }
+      .xscale button:last-child {
+        border-left: none;
+        border-radius: 0 4px 4px 0;
+      }
+      .xscale button:hover {
+        color: var(--ink);
+      }
+      .xscale button[aria-pressed="true"] {
+        background: var(--tint);
+        color: var(--ink);
+      }
+      .xscale button:focus-visible {
+        outline: 2px solid var(--r);
+        outline-offset: 2px;
+      }
+
+      /* schematic */
+      .sch-wrap {
+        border: 1px solid var(--rule);
+        border-radius: 6px;
+        overflow: hidden;
+      }
+      .bg {
+        fill: var(--paper);
+      }
+      .zone {
+        fill: var(--muted);
+        font: 12px var(--serif);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .zone.mid {
+        text-anchor: middle;
+      }
+      .count {
+        fill: var(--ink);
+        font: 600 15px var(--serif);
+        text-anchor: end;
+        font-variant-numeric: tabular-nums;
+      }
+      .count.mid {
+        text-anchor: middle;
+      }
+      .cap {
+        fill: var(--muted);
+        font: 12px var(--serif);
+        text-anchor: middle;
+      }
+      .plasma,
+      .gut {
+        fill: var(--cyto);
+        stroke: var(--muted);
+        stroke-width: 1.25;
+      }
+      .flow {
+        stroke: var(--muted);
+        stroke-width: 1.75;
+        fill: none;
+      }
+      .flowhead {
+        fill: var(--muted);
+      }
+      .rate {
+        fill: var(--ink);
+        font: italic 15px var(--serif);
+        text-anchor: middle;
+      }
+      .lig {
+        fill: var(--r);
+        transition: opacity 0.3s;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .lig,
+        label {
+          transition: none;
+        }
+      }
+
+      .back {
+        display: inline-flex;
+        gap: 0.4em;
+        margin-bottom: 0.9rem;
+        color: var(--muted);
+        font-size: 0.8rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        text-decoration: none;
+      }
+      .back:hover {
+        color: var(--ink);
+      }
+      .back:focus-visible {
+        outline: 2px solid var(--r);
+        outline-offset: 3px;
+        border-radius: 2px;
+      }
+      .back span {
+        transition: transform 0.15s;
+      }
+      .back:hover span {
+        transform: translateX(-3px);
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .back span {
+          transition: none;
+        }
+      }
+      .series {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem 2rem;
+        margin-top: 3rem;
+        padding-top: 1.25rem;
+        border-top: 1px solid var(--rule);
+      }
+      .series a {
+        display: grid;
+        gap: 0.15rem;
+        color: inherit;
+        text-decoration: none;
+      }
+      .series .next {
+        margin-left: auto;
+        text-align: right;
+      }
+      .series .lbl {
+        color: var(--muted);
+        font-size: 0.8rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .series .nm {
+        font-weight: 600;
+      }
+      .series a:hover .nm {
+        color: var(--r);
+      }
+      .series a:focus-visible {
+        outline: 2px solid var(--r);
+        outline-offset: 3px;
+        border-radius: 2px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <a class="back" href="../../#pharmacokinetics"><span aria-hidden="true">←</span> Explorables</a>
+      <h1>Single-dose Administration</h1>
+      <div class="grid">
+        <div class="left">
+          <div class="view" role="group" aria-label="Route of administration">
+            <button type="button" data-route="iv">iv</button
+            ><button type="button" data-route="oral">oral</button>
+          </div>
+          <svg
+            id="graph"
+            viewBox="0 0 400 280"
+            role="img"
+            aria-label="Plasma concentration against time after a single dose"
+          ></svg>
+          <div class="under">
+            <div class="legend" aria-hidden="true">
+              <span id="lgOral"
+                ><svg viewBox="0 0 26 8">
+                  <line class="curve" x1="0" x2="26" y1="4" y2="4" /></svg
+                >Oral</span
+              >
+              <span id="lgIv"
+                ><svg viewBox="0 0 26 8">
+                  <line id="lgIvLine" class="curve" x1="0" x2="26" y1="4" y2="4" /></svg
+                >Intravenous</span
+              >
+            </div>
+            <div class="xscale" role="group" aria-label="y-axis scale">
+              <button type="button" data-scale="lin">Linear</button
+              ><button type="button" data-scale="log">Log</button>
+            </div>
+          </div>
+          <div class="sliders">
+            <label for="t"
+              ><span>t</span
+              ><input
+                id="t"
+                type="range"
+                min="0"
+                max="24"
+                step="0.1"
+                value="2" /><span id="tV"></span
+            ></label>
+            <label for="ka" id="kaLbl"
+              ><span>k<sub>a</sub></span
+              ><input
+                id="ka"
+                type="range"
+                min="0.1"
+                max="5"
+                step="0.05"
+                value="1.2" /><span id="kaV"></span
+            ></label>
+            <label for="f" id="fLbl"
+              ><span>F</span
+              ><input
+                id="f"
+                type="range"
+                min="0.05"
+                max="1"
+                step="0.01"
+                value="0.7" /><span id="fV"></span
+            ></label>
+            <label for="ke"
+              ><span>k<sub>e</sub></span
+              ><input
+                id="ke"
+                type="range"
+                min="0.05"
+                max="1.5"
+                step="0.01"
+                value="0.2" /><span id="keV"></span
+            ></label>
+            <label for="vd"
+              ><span>V<sub>d</sub></span
+              ><input
+                id="vd"
+                type="range"
+                min="5"
+                max="100"
+                step="1"
+                value="20" /><span id="vdV"></span
+            ></label>
+          </div>
+          <p class="note" id="note"></p>
+          <div class="formula" id="eq"></div>
+          <div class="stats" aria-live="polite">
+            <div>
+              <span class="k"><i>t</i><sub>½</sub> = ln 2 / <i>k</i><sub>e</sub></span>
+              <span class="v" id="sHalf"></span>
+            </div>
+            <div>
+              <span class="k">CL = <i>k</i><sub>e</sub> <i>V</i><sub>d</sub></span>
+              <span class="v" id="sCl"></span>
+            </div>
+            <div>
+              <span class="k">AUC<sub>0–∞</sub> = <i>F</i><i>D</i> / CL</span>
+              <span class="v" id="sAuc"></span>
+            </div>
+          </div>
+        </div>
+        <div class="right">
+          <div class="sch-wrap">
+            <svg
+              id="sch"
+              viewBox="0 0 600 430"
+              role="img"
+              aria-label="One-compartment model: drug enters the plasma, by injection or absorption from the gut, and is eliminated; the number of dots in plasma follows the concentration"
+            ></svg>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      // One-compartment model, first-order absorption and elimination, single dose.
+      let F = 0.7; // oral bioavailability, set by its slider
+      const D = 100, // dose, mg
+        TMAX = 24, // h shown on the x-axis
+        CPD = 0.2, // mg/L per plasma dot
+        APD = 4; // mg per gut dot
+
+      const tEl = document.getElementById("t"),
+        kaEl = document.getElementById("ka"),
+        fEl = document.getElementById("f"),
+        keEl = document.getElementById("ke"),
+        vdEl = document.getElementById("vd");
+      let route = "iv";
+
+      // C(t) in mg/L. When ka = ke the oral (Bateman) equation is 0/0; use its limit.
+      const SAME = 1e-6;
+      function conc(t, r, ka, ke, V) {
+        if (r === "iv") return (D / V) * Math.exp(-ke * t);
+        if (Math.abs(ka - ke) < SAME)
+          return ((F * D * ke * t) / V) * Math.exp(-ke * t);
+        return (
+          ((F * D * ka) / (V * (ka - ke))) *
+          (Math.exp(-ke * t) - Math.exp(-ka * t))
+        );
+      }
+      // amount still in the gut (mg)
+      const gutAmt = (t, ka) => F * D * Math.exp(-ka * t);
+
+      // ---------- y-axis scales ----------
+      const SCALES = {
+        lin: {
+          min: 0,
+          max: 22,
+          to: (c) => c,
+          ticks: [0, 5, 10, 15, 20].map((v) => [v, v]),
+        },
+        log: {
+          min: -2,
+          max: 1.5,
+          to: (c) => Math.log10(Math.max(c, 1e-9)),
+          ticks: [
+            [-2, "0.01"],
+            [-1, "0.1"],
+            [0, "1"],
+            [1, "10"],
+          ],
+        },
+      };
+      let scale = SCALES.lin;
+
+      const fmt = (v, p = 3) => {
+        if (v === 0) return "0";
+        if (Math.abs(v) >= 100) return v.toFixed(0);
+        return String(+v.toPrecision(p));
+      };
+      const fix = (v, d) => v.toFixed(d);
+
+      // ---------- Graph ----------
+      const G = { x0: 46, x1: 384, y0: 236, y1: 20 };
+      const graph = document.getElementById("graph");
+      const sx = (t) => G.x0 + (t / TMAX) * (G.x1 - G.x0);
+      const sy = (c) => {
+        const v = Math.min(scale.max, Math.max(scale.min, scale.to(c)));
+        return G.y0 - ((v - scale.min) / (scale.max - scale.min)) * (G.y0 - G.y1);
+      };
+      const path = (fn) => {
+        let d = "";
+        for (let i = 0; i <= 240; i++) {
+          const t = (TMAX * i) / 240;
+          d += (i ? "L" : "M") + sx(t).toFixed(1) + "," + sy(fn(t)).toFixed(1);
+        }
+        return d;
+      };
+
+      function drawGraph(t, ka, ke, V) {
+        let s = "";
+        for (const [v, lab] of scale.ticks) {
+          const y =
+            G.y0 - ((v - scale.min) / (scale.max - scale.min)) * (G.y0 - G.y1);
+          s += `<line class="grid-l" x1="${G.x0}" x2="${G.x1}" y1="${y}" y2="${y}"/>`;
+          s += `<text class="tick y" x="${G.x0 - 8}" y="${y}">${lab}</text>`;
+        }
+        for (let h = 0; h <= TMAX; h += 4) {
+          s += `<line class="axis" x1="${sx(h)}" x2="${sx(h)}" y1="${G.y0}" y2="${G.y0 + 5}"/>`;
+          s += `<text class="tick" x="${sx(h)}" y="${G.y0 + 20}">${h}</text>`;
+        }
+        s += `<line class="axis" x1="${G.x0}" x2="${G.x1}" y1="${G.y0}" y2="${G.y0}"/>`;
+        s += `<line class="axis" x1="${G.x0}" x2="${G.x0}" y1="${G.y0}" y2="${G.y1}"/>`;
+        s += `<text class="alabel" x="${(G.x0 + G.x1) / 2}" y="${G.y0 + 40}">t (h)</text>`;
+        s += `<text class="alabel" transform="translate(13 ${(G.y0 + G.y1) / 2}) rotate(-90)">C<tspan baseline-shift="sub" font-size="10">p</tspan><tspan baseline-shift="baseline"> (mg/L)</tspan></text>`;
+
+        // elimination half-life guide, read off the IV curve (the dashed reference
+        // in oral mode): time for C0 = D/Vd to fall to C0/2. Same ke for both routes.
+        const th = Math.LN2 / ke;
+        if (th <= TMAX) {
+          const gx = sx(th),
+            gy = sy(D / V / 2);
+          s += `<path class="guide" d="M${G.x0},${gy} H${gx} V${G.y0}"/>`;
+          s += `<text class="guidel" x="${gx + 5}" y="${G.y0 - 7}">t<tspan baseline-shift="sub" font-size="9">½</tspan></text>`;
+        }
+        if (route === "iv") {
+          s += `<path class="curve" d="${path((x) => conc(x, "iv", ka, ke, V))}"/>`;
+        } else {
+          // IV reference, same dose (F = 1): the gap between the curves is the bioavailability
+          s += `<path class="ctrl" d="${path((x) => conc(x, "iv", ka, ke, V))}"/>`;
+          s += `<path class="curve" d="${path((x) => conc(x, "oral", ka, ke, V))}"/>`;
+        }
+
+        const C = conc(t, route, ka, ke, V),
+          px = sx(t),
+          py = sy(C);
+        s += `<path class="drop" d="M${px},${G.y0} V${py} H${G.x0}"/>`;
+        s += `<circle class="pt" cx="${px}" cy="${py}" r="6"/>`;
+        graph.innerHTML = s;
+      }
+
+      function setFromPointer(e) {
+        const r = graph.getBoundingClientRect();
+        const x = ((e.clientX - r.left) / r.width) * 400;
+        const f = Math.min(1, Math.max(0, (x - G.x0) / (G.x1 - G.x0)));
+        tEl.value = f * TMAX; // the slider snaps to its step
+        render();
+      }
+      graph.addEventListener("pointerdown", (e) => {
+        e.preventDefault(); // otherwise a drag can start a text selection
+        graph.setPointerCapture(e.pointerId);
+        setFromPointer(e);
+      });
+      graph.addEventListener("pointermove", (e) => {
+        if (graph.hasPointerCapture(e.pointerId)) setFromPointer(e);
+      });
+
+      // ---------- Schematic (built once, then dots toggled) ----------
+      const NS = "http://www.w3.org/2000/svg";
+      const sch = document.getElementById("sch");
+      const el = (tag, attrs, parent) => {
+        const n = document.createElementNS(NS, tag);
+        for (const k in attrs) n.setAttribute(k, attrs[k]);
+        (parent || sch).appendChild(n);
+        return n;
+      };
+      // seeded RNG so the picture is identical on every load
+      let seed = 11;
+      const rnd = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
+
+      // jittered grid of dot sites, revealed in a fixed shuffled order
+      function sites(x, y, n, cell, jit) {
+        const out = [];
+        for (let i = 0; i < n; i++)
+          for (let j = 0; j < n; j++)
+            out.push({
+              x: x + cell * (j + 0.5) + (rnd() - 0.5) * 2 * jit,
+              y: y + cell * (i + 0.5) + (rnd() - 0.5) * 2 * jit,
+              k: rnd(),
+            });
+        return out.sort((a, b) => a.k - b.k);
+      }
+
+      el("rect", { class: "bg", x: 0, y: 0, width: 600, height: 430 });
+      const defs = el("defs", {});
+      const mk = el(
+        "marker",
+        {
+          id: "fh",
+          viewBox: "0 0 10 10",
+          refX: 9,
+          refY: 5,
+          markerWidth: 6,
+          markerHeight: 6,
+          orient: "auto",
+        },
+        defs,
+      );
+      el("path", { class: "flowhead", d: "M0,0 L10,5 L0,10 z" }, mk);
+
+      const MID = 215; // vertical centre of the compartments
+      // plasma: the single compartment, apparent volume Vd
+      const P = { x: 186, y: MID - 124, w: 248 };
+      el("text", { class: "zone", x: P.x, y: P.y - 12 }).textContent = "Plasma";
+      const cEl = el("text", { class: "count", x: P.x + P.w, y: P.y - 11 });
+      el("rect", {
+        class: "plasma",
+        x: P.x,
+        y: P.y,
+        width: P.w,
+        height: P.w,
+        rx: 22,
+      });
+      const pDots = sites(P.x + 9, P.y + 9, 10, 23, 4).map((p) =>
+        el("circle", { class: "lig", cx: p.x, cy: p.y, r: 6, opacity: 0 }),
+      );
+      const pCap = el("text", { class: "cap", x: P.x + P.w / 2, y: P.y + P.w + 22 });
+
+      // gut (oral only)
+      const gutG = el("g", {});
+      const Q = { x: 16, y: MID - 56, w: 112 };
+      el("text", { class: "zone", x: Q.x, y: Q.y - 12 }, gutG).textContent = "Gut";
+      const gEl = el("text", { class: "count", x: Q.x + Q.w, y: Q.y - 11 }, gutG);
+      el("rect", { class: "gut", x: Q.x, y: Q.y, width: Q.w, height: Q.w, rx: 16 }, gutG);
+      const gDots = sites(Q.x + 6, Q.y + 6, 5, 20, 3).map((p) =>
+        el("circle", { class: "lig", cx: p.x, cy: p.y, r: 5.5, opacity: 0 }, gutG),
+      );
+      el("text", { class: "cap", x: Q.x + Q.w / 2, y: Q.y + Q.w + 22 }, gutG).textContent =
+        `1 dot = ${APD} mg`;
+      el("line", { class: "flow", x1: Q.x + Q.w + 8, x2: P.x - 8, y1: MID, y2: MID, "marker-end": "url(#fh)" }, gutG);
+      const kaT = el("text", { class: "rate", x: (Q.x + Q.w + P.x) / 2, y: MID - 12 }, gutG);
+      kaT.innerHTML = `k<tspan baseline-shift="sub" font-size="11">a</tspan>`;
+
+      // IV bolus (IV only)
+      const ivG = el("g", {});
+      el("line", { class: "flow", x1: 40, x2: P.x - 8, y1: MID, y2: MID, "marker-end": "url(#fh)" }, ivG);
+      el("text", { class: "zone mid", x: 105, y: MID - 14 }, ivG).textContent = "IV bolus";
+      el("text", { class: "cap", x: 105, y: MID + 24 }, ivG).textContent = `Dose D = ${D} mg`;
+
+      // elimination
+      const EX = P.x + P.w;
+      el("line", { class: "flow", x1: EX + 8, x2: 584, y1: MID, y2: MID, "marker-end": "url(#fh)" });
+      const keT = el("text", { class: "rate", x: (EX + 584) / 2, y: MID - 12 });
+      keT.innerHTML = `k<tspan baseline-shift="sub" font-size="11">e</tspan>`;
+      el("text", { class: "zone mid", x: (EX + 584) / 2, y: MID + 30 }).textContent = "Eliminated";
+      const eEl = el("text", { class: "count mid", x: (EX + 584) / 2, y: MID + 52 });
+
+      function drawSchematic(t, ka, ke, V) {
+        const C = conc(t, route, ka, ke, V);
+        const inGut = route === "oral" ? gutAmt(t, ka) : 0;
+        const given = route === "oral" ? F * D : D;
+        const elim = Math.max(0, given - inGut - C * V); // mass balance
+        const kp = Math.min(pDots.length, Math.round(C / CPD));
+        pDots.forEach((c, i) => c.setAttribute("opacity", i < kp ? 1 : 0));
+        const kg = Math.min(gDots.length, Math.round(inGut / APD));
+        gDots.forEach((c, i) => c.setAttribute("opacity", i < kg ? 1 : 0));
+        gutG.style.display = route === "oral" ? "" : "none";
+        ivG.style.display = route === "iv" ? "" : "none";
+        cEl.textContent = `${fmt(C)} mg/L`;
+        gEl.textContent = `${fmt(inGut)} mg`;
+        eEl.textContent = `${fmt(elim)} mg`;
+        pCap.textContent =
+          route === "oral"
+            ? `1 dot = ${CPD} mg/L`
+            : `Vd = ${V} L · 1 dot = ${CPD} mg/L`;
+      }
+
+      // ---------- Render ----------
+      const stat = (id, txt) => (document.getElementById(id).textContent = txt);
+      function render() {
+        const t = +tEl.value,
+          ka = +kaEl.value,
+          ke = +keEl.value,
+          V = +vdEl.value;
+        F = +fEl.value;
+        const oral = route === "oral";
+        stat("tV", `${fix(t, 1)} h`);
+        stat("kaV", `${fix(ka, 2)} h⁻¹`);
+        stat("keV", `${fix(ke, 2)} h⁻¹`);
+        stat("vdV", `${V} L`);
+        stat("fV", fix(F, 2));
+        for (const [inp, lbl] of [[kaEl, "kaLbl"], [fEl, "fLbl"]]) {
+          inp.disabled = !oral;
+          document.getElementById(lbl).classList.toggle("off", !oral);
+        }
+
+        const C = conc(t, route, ka, ke, V);
+        const T = fix(t, 1),
+          KA = fix(ka, 2),
+          KE = fix(ke, 2);
+        let tex;
+        if (!oral) {
+          tex = `\\begin{aligned} C(t) &= \\frac{D}{V_d}\\,e^{-k_e t} \\\\[0.6em] &= \\frac{${D}}{${V}}\\,e^{-${KE}\\times${T}} = \\mathbf{${fmt(C)}}\\ \\text{mg/L} \\end{aligned}`;
+        } else if (Math.abs(ka - ke) < SAME) {
+          tex = `\\begin{aligned} C(t) &= \\frac{F D\\,k\\,t}{V_d}\\,e^{-k t} \\quad (k_a = k_e = k) \\\\[0.6em] &= \\frac{(${fix(F, 2)})(${D})(${KE})(${T})}{${V}}\\,e^{-${KE}\\times${T}} = \\mathbf{${fmt(C)}}\\ \\text{mg/L} \\end{aligned}`;
+        } else {
+          tex = `\\begin{aligned} C(t) &= \\frac{F D\\,k_a}{V_d\\,(k_a - k_e)}\\left(e^{-k_e t} - e^{-k_a t}\\right) \\\\[0.6em] &= \\frac{(${fix(F, 2)})(${D})(${KA})}{${V}\\,(${KA} - ${KE})}\\left(e^{-${KE}\\times${T}} - e^{-${KA}\\times${T}}\\right) = \\mathbf{${fmt(C)}}\\ \\text{mg/L} \\end{aligned}`;
+        }
+        katex.render(tex, document.getElementById("eq"), {
+          displayMode: true,
+          throwOnError: false,
+        });
+
+        const CL = ke * V;
+        stat("sHalf", `${fmt(Math.LN2 / ke)} h`);
+        stat("sCl", `${fmt(CL)} L/h`);
+        stat("sAuc", `${fmt(((oral ? F : 1) * D) / CL)} mg·h/L`);
+        document.getElementById("note").textContent = oral
+          ? `Dose D = ${D} mg by mouth; F·D = ${fmt(F * D)} mg reaches the systemic circulation.` +
+            (ka < ke
+              ? " Here kₐ < kₑ (flip-flop): the terminal slope reflects absorption, not elimination."
+              : "")
+          : `Dose D = ${D} mg`;
+
+        // legend: in oral mode the IV curve becomes the dashed reference
+        document.getElementById("lgOral").hidden = !oral;
+        document.getElementById("lgIvLine").setAttribute("class", oral ? "ctrl" : "curve");
+
+        drawGraph(t, ka, ke, V);
+        drawSchematic(t, ka, ke, V);
+      }
+      [tEl, kaEl, fEl, keEl, vdEl].forEach((e) => e.addEventListener("input", render));
+
+      const routeBtns = document.querySelectorAll(".view button");
+      function setRoute(r) {
+        route = r;
+        routeBtns.forEach((b) => b.setAttribute("aria-pressed", b.dataset.route === r));
+        render();
+      }
+      routeBtns.forEach((b) => b.addEventListener("click", () => setRoute(b.dataset.route)));
+
+      const scaleBtns = document.querySelectorAll(".xscale button");
+      function setScale(key) {
+        scale = SCALES[key];
+        scaleBtns.forEach((b) => b.setAttribute("aria-pressed", b.dataset.scale === key));
+        render();
+      }
+      scaleBtns.forEach((b) => b.addEventListener("click", () => setScale(b.dataset.scale)));
+
+      scale = SCALES.lin;
+      scaleBtns.forEach((b) => b.setAttribute("aria-pressed", b.dataset.scale === "lin"));
+      setRoute("iv");
+    </script>
+  </body>
+</html>
