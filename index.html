@@ -1,112 +1,244 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Pharmacology Teaching</title>
-  <meta name="description" content="Teaching materials for pharmacology: lectures, notes and self-study resources.">
-  <style>
-    :root {
-      --bg: #fafaf8;
-      --surface: #ffffff;
-      --text: #1f2328;
-      --muted: #5b636e;
-      --accent: #0f766e;
-      --border: #e3e5e8;
-    }
-    @media (prefers-color-scheme: dark) {
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>Pharmacology teaching</title>
+    <meta
+      name="description"
+      content="Tools for visualising pharmacology concepts."
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap"
+      rel="stylesheet"
+    />
+    <!--
+      Styling adapted from Explorables by Theo-BRN
+      (https://github.com/Theo-BRN/Explorables), code under the MIT License.
+    -->
+    <style>
       :root {
-        --bg: #14171a;
-        --surface: #1c2024;
-        --text: #e6e8eb;
-        --muted: #9aa3ad;
-        --accent: #2dd4bf;
-        --border: #2c3238;
+        --paper: #f5f7fa;
+        --ink: #1d2733;
+        --muted: #5b6878;
+        --r: #2f6fb3;
+        --rule: #d5dce5;
+        --tint: #dde8f5;
+        --serif: "Source Serif 4", Georgia, serif;
       }
-    }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-      line-height: 1.6;
-      background: var(--bg);
-      color: var(--text);
-    }
-    .wrap { max-width: 880px; margin: 0 auto; padding: 0 16px; }
-    header { padding: 56px 0 32px; border-bottom: 1px solid var(--border); }
-    header h1 { margin: 0 0 8px; font-size: clamp(1.8rem, 4vw, 2.6rem); }
-    header p { margin: 0; color: var(--muted); max-width: 60ch; }
-    main { padding: 32px 0 48px; }
-    h2 { font-size: 1.25rem; margin: 32px 0 16px; }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-      gap: 16px;
-    }
-    .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 18px 20px;
-    }
-    .card h3 { margin: 0 0 6px; font-size: 1.05rem; }
-    .card p { margin: 0; color: var(--muted); font-size: 0.95rem; }
-    a { color: var(--accent); }
-    footer {
-      border-top: 1px solid var(--border);
-      padding: 20px 0 32px;
-      color: var(--muted);
-      font-size: 0.9rem;
-    }
-  </style>
-</head>
-<body>
-  <header>
-    <div class="wrap">
-      <h1>Pharmacology Teaching</h1>
-      <p>Lecture materials, notes and self-study resources for pharmacology courses.</p>
-    </div>
-  </header>
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme="light"]) {
+          --paper: #141a21;
+          --ink: #e3e8ee;
+          --muted: #93a0b0;
+          --r: #7fb1ea;
+          --rule: #2c3643;
+          --tint: #1f3149;
+          color-scheme: dark;
+        }
+      }
+      :root[data-theme="dark"] {
+        --paper: #141a21;
+        --ink: #e3e8ee;
+        --muted: #93a0b0;
+        --r: #7fb1ea;
+        --rule: #2c3643;
+        --tint: #1f3149;
+        color-scheme: dark;
+      }
+      body {
+        margin: 0;
+        background: var(--paper);
+        color: var(--ink);
+        font: 1.0625rem/1.65 var(--serif);
+      }
+      main,
+      footer {
+        max-width: 44rem;
+        margin: 0 auto;
+        padding-inline: 1.25rem;
+      }
+      main {
+        padding-block: 4rem 2rem;
+      }
+      h1 {
+        font-weight: 600;
+        font-size: 2.1rem;
+        line-height: 1.15;
+        margin: 0;
+      }
+      .lede {
+        color: var(--muted);
+        margin: 0.4rem 0 2.5rem;
+      }
 
-  <main class="wrap">
-    <h2>Topics</h2>
-    <div class="grid">
-      <div class="card">
-        <h3>General Pharmacology</h3>
-        <p>Pharmacokinetics, pharmacodynamics, receptors and dose–response.</p>
-      </div>
-      <div class="card">
-        <h3>Autonomic Nervous System</h3>
-        <p>Cholinergic and adrenergic drugs, agonists and antagonists.</p>
-      </div>
-      <div class="card">
-        <h3>Cardiovascular Drugs</h3>
-        <p>Antihypertensives, antiarrhythmics, heart failure and lipid-lowering agents.</p>
-      </div>
-      <div class="card">
-        <h3>CNS Pharmacology</h3>
-        <p>Anxiolytics, antidepressants, antipsychotics, antiepileptics and analgesics.</p>
-      </div>
-      <div class="card">
-        <h3>Chemotherapy</h3>
-        <p>Antibacterial, antiviral, antifungal and anticancer drugs.</p>
-      </div>
-      <div class="card">
-        <h3>Endocrine Pharmacology</h3>
-        <p>Insulin and antidiabetics, corticosteroids, thyroid and sex hormones.</p>
-      </div>
-    </div>
+      section + section {
+        margin-top: 3rem;
+      }
+      h2 {
+        color: var(--muted);
+        font-size: 0.8rem;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin: 0;
+      }
+      h2 + ul {
+        margin-top: 0.9rem;
+      }
 
-    <h2>Resources</h2>
-    <ul>
-      <li>Lecture slides — coming soon</li>
-      <li>Self-assessment quizzes — coming soon</li>
-      <li>Drug classification tables — coming soon</li>
-    </ul>
-  </main>
+      ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        border-top: 1px solid var(--rule);
+      }
+      li {
+        border-bottom: 1px solid var(--rule);
+      }
+      .item {
+        display: grid;
+        grid-template-columns: 1fr;
+        align-items: baseline;
+        gap: 0.15rem 1rem;
+        padding: 1.1rem 0.75rem;
+        margin-inline: -0.75rem;
+        color: inherit;
+        text-decoration: none;
+        border-radius: 6px;
+        transition: background 0.15s;
+      }
+      .series .item {
+        grid-template-columns: 1.25rem 1fr;
+      }
+      a.item:hover {
+        background: var(--tint);
+      }
+      .item:focus-visible {
+        outline: 2px solid var(--r);
+        outline-offset: 2px;
+      }
+      .n {
+        color: var(--r);
+        font-weight: 600;
+        font-size: 1.2rem;
+        font-variant-numeric: tabular-nums;
+      }
+      .t {
+        font-weight: 600;
+        font-size: 1.2rem;
+      }
+      a .t::after {
+        content: " →";
+        color: var(--r);
+        opacity: 0;
+        transition: opacity 0.15s;
+      }
+      .item:hover .t::after,
+      .item:focus-visible .t::after {
+        opacity: 1;
+      }
+      .placeholder {
+        color: var(--muted);
+        font-style: italic;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .item,
+        .t::after {
+          transition: none;
+        }
+      }
 
-  <footer>
-    <div class="wrap">© 2026 Andrzej Szewczak · Hosted on GitHub Pages</div>
-  </footer>
-</body>
+      footer {
+        padding-block: 1rem 3rem;
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+      footer p {
+        margin: 0 0 0.4rem;
+      }
+      footer a {
+        color: var(--muted);
+      }
+      footer a:hover {
+        color: var(--ink);
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Pharmacology teaching</h1>
+      <p class="lede">Tools for visualising pharmacology concepts</p>
+
+      <section id="pharmacodynamics">
+        <h2>Pharmacodynamics</h2>
+        <ul class="series">
+          <li>
+            <a class="item" href="https://theo-brn.github.io/Explorables/pharmacology/receptor-occupancy/">
+              <span class="n">1</span>
+              <span class="t">Receptor Occupancy</span>
+            </a>
+          </li>
+          <li>
+            <a class="item" href="https://theo-brn.github.io/Explorables/pharmacology/two-ligands/">
+              <span class="n">2</span>
+              <span class="t">Two Ligands</span>
+            </a>
+          </li>
+          <li>
+            <a class="item" href="https://theo-brn.github.io/Explorables/pharmacology/saturation-binding/">
+              <span class="n">3</span>
+              <span class="t">Saturation Binding</span>
+            </a>
+          </li>
+          <li>
+            <a class="item" href="https://theo-brn.github.io/Explorables/pharmacology/competition-binding/">
+              <span class="n">4</span>
+              <span class="t">Competition Binding</span>
+            </a>
+          </li>
+          <li>
+            <a class="item" href="https://theo-brn.github.io/Explorables/pharmacology/affinity-efficacy/">
+              <span class="n">5</span>
+              <span class="t">Affinity and Efficacy</span>
+            </a>
+          </li>
+          <li>
+            <a class="item" href="https://theo-brn.github.io/Explorables/pharmacology/dose-ratios/">
+              <span class="n">6</span>
+              <span class="t">Dose Ratios</span>
+            </a>
+          </li>
+        </ul>
+      </section>
+
+      <section id="pharmacokinetics">
+        <h2>Pharmacokinetics</h2>
+        <ul class="series">
+          <!--
+            Add your pages here, e.g.:
+            <li>
+              <a class="item" href="pharmacokinetics/half-life/">
+                <span class="n">1</span>
+                <span class="t">Half-life</span>
+              </a>
+            </li>
+          -->
+          <li>
+            <div class="item"><span class="n"></span><span class="t placeholder">Coming soon</span></div>
+          </li>
+        </ul>
+      </section>
+    </main>
+    <footer>
+      <p>
+        Pharmacodynamics tools from
+        <a href="https://theo-brn.github.io/Explorables/">Explorables</a>
+        by Theo-BRN (content CC BY 4.0).
+      </p>
+    </footer>
+  </body>
 </html>
