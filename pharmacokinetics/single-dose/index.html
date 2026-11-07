@@ -396,7 +396,6 @@
         fill: var(--muted);
         font: 14px var(--serif);
         font-variant-numeric: tabular-nums;
-        dominant-baseline: central;
       }
       .key tspan {
         font-weight: 600;
@@ -840,7 +839,7 @@
       );
       // key, top right, as in Dose Ratios: one dot is the same amount of drug in every box
       el("circle", { class: "lig", cx: 462, cy: 22, r: DOT_R });
-      el("text", { class: "key", x: 474, y: 22 }).innerHTML = `<tspan>${MPD} mg</tspan> drug`;
+      el("text", { class: "key", x: 474, y: 27 }).innerHTML = `<tspan>${MPD} mg</tspan> drug`;
       // the rest of the drug in the body: same Cp, in the part of Vd that is not plasma
       const restEl = el("text", { class: "cap", x: P.x + P.w / 2, y: P.y + P.w + 24 });
 
@@ -882,7 +881,7 @@
         gutG.style.display = route === "oral" ? "" : "none";
         ivG.style.display = route === "iv" ? "" : "none";
         cEl.textContent = `${fmt(C)} mg/L`;
-        restEl.textContent = `${fmtMass(C * (V - VP))} outside of plasma`;
+        restEl.textContent = `${fmtMass(C * (V - VP))} outside plasma`;
         gEl.textContent = fmtMass(inGut);
         // eliminated is a difference of near-equal numbers early on: treat rounding noise as 0
         eEl.textContent = fmtMass(elim < 1e-9 * given ? 0 : elim);
