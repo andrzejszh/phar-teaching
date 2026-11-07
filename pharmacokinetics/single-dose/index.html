@@ -632,6 +632,21 @@
         return String(+v.toPrecision(p));
       };
       const fix = (v, d) => v.toFixed(d);
+      // an amount given in mg, shown with an SI prefix so it stays readable: 0.0042 mg → 4.2 µg
+      const MASS = [
+        [1, "mg"],
+        [1e-3, "µg"],
+        [1e-6, "ng"],
+        [1e-9, "pg"],
+      ];
+      function fmtMass(mg) {
+        if (!(mg > 0)) return "0 mg";
+        if (mg < 1e-9) return "< 1 pg";
+        let i = MASS.findIndex(([f]) => mg >= f);
+        let n = +(mg / MASS[i][0]).toPrecision(3);
+        if (n >= 1000 && i > 0) n = +(mg / MASS[--i][0]).toPrecision(3); // 999.7 µg → 1 mg
+        return `${fmt(n)} ${MASS[i][1]}`;
+      }
 
       // ---------- Graph ----------
       const G = { x0: 46, x1: 384, y0: 236, y1: 20 };
@@ -850,8 +865,9 @@
         layoutKeys(); // hidden text measures 0 wide, so centre after showing
         ivG.style.display = route === "iv" ? "" : "none";
         cEl.textContent = `${fmt(C)} mg/L`;
-        gEl.textContent = `${fmt(inGut)} mg`;
-        eEl.textContent = `${fmt(elim)} mg`;
+        gEl.textContent = fmtMass(inGut);
+        // eliminated is a difference of near-equal numbers early on: treat rounding noise as 0
+        eEl.textContent = fmtMass(elim < 1e-9 * given ? 0 : elim);
       }
 
       // ---------- Render ----------
