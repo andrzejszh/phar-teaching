@@ -394,6 +394,7 @@
       }
       .lig {
         fill: var(--r);
+        fill-opacity: 0.55; /* as in Affinity and Efficacy: overlapping dots read as denser */
         transition: opacity 0.3s;
       }
       @media (prefers-reduced-motion: reduce) {
@@ -763,16 +764,30 @@
       const rnd = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
 
       // jittered grid of dot sites, revealed in a fixed shuffled order
-      function sites(x, y, n, cell, jit) {
-        const out = [];
-        for (let i = 0; i < n; i++)
-          for (let j = 0; j < n; j++)
-            out.push({
-              x: x + cell * (j + 0.5) + (rnd() - 0.5) * 2 * jit,
-              y: y + cell * (i + 0.5) + (rnd() - 0.5) * 2 * jit,
-              k: rnd(),
-            });
-        return out.sort((a, b) => a.k - b.k);
+      // dot positions inside a rounded box (x, y, side w, corner rx, dot radius r), in the
+      // order they appear: the first `spread` keep apart, the rest fall at random and overlap,
+      // so a high concentration crowds the box (the Affinity and Efficacy approach)
+      function scatter(x, y, w, rx, r, n, spread) {
+        const m = r + 3, // keep each dot clear of the outline
+          // inside the box shrunk by m: within rx − m of its core (the box minus its corners)
+          inside = (px, py) => {
+            const cx = Math.min(Math.max(px, x + rx), x + w - rx),
+              cy = Math.min(Math.max(py, y + rx), y + w - rx);
+            return (px - cx) ** 2 + (py - cy) ** 2 <= (rx - m) ** 2;
+          },
+          pt = () => {
+            for (;;) {
+              const p = { x: x + m + rnd() * (w - 2 * m), y: y + m + rnd() * (w - 2 * m) };
+              if (inside(p.x, p.y)) return p;
+            }
+          },
+          pts = [];
+        for (let tries = 0; pts.length < spread && tries < 20000; tries++) {
+          const p = pt();
+          if (pts.every((q) => (q.x - p.x) ** 2 + (q.y - p.y) ** 2 > (r * 3.2) ** 2)) pts.push(p);
+        }
+        while (pts.length < n) pts.push(pt());
+        return pts;
       }
 
       el("rect", { class: "bg", x: 0, y: 0, width: 600, height: 430 });
@@ -805,7 +820,9 @@
         height: P.w,
         rx: 22,
       });
-      const pDots = sites(P.x + 9, P.y + 9, 10, 23, 4).map((p) =>
+      // enough dots for the highest concentration the sliders allow, D / smallest Vd
+      const P_MAX = Math.ceil(D / +vdEl.min / CPD);
+      const pDots = scatter(P.x, P.y, P.w, 22, 6, P_MAX, 22).map((p) =>
         el("circle", { class: "lig", cx: p.x, cy: p.y, r: 6, opacity: 0 }),
       );
       // dot key: a sample dot followed by what one dot stands for, centred under its box
@@ -833,7 +850,7 @@
       el("text", { class: "zone", x: Q.x, y: Q.y - 12 }, gutG).textContent = "Gut";
       const gEl = el("text", { class: "count", x: Q.x + Q.w, y: Q.y - 11 }, gutG);
       el("rect", { class: "gut", x: Q.x, y: Q.y, width: Q.w, height: Q.w, rx: 16 }, gutG);
-      const gDots = sites(Q.x + 6, Q.y + 6, 5, 20, 3).map((p) =>
+      const gDots = scatter(Q.x, Q.y, Q.w, 16, 5.5, Math.ceil(D / APD), 5).map((p) =>
         el("circle", { class: "lig", cx: p.x, cy: p.y, r: 5.5, opacity: 0 }, gutG),
       );
       dotKey(Q.x + Q.w / 2, Q.y + Q.w + 24, 5.5, `= ${APD} mg`, gutG);
@@ -860,9 +877,9 @@
         const inGut = route === "oral" ? gutAmt(t, ka) : 0;
         const given = route === "oral" ? F * D : D;
         const elim = Math.max(0, given - inGut - C * V); // mass balance
-        const kp = Math.min(pDots.length, Math.round(C / CPD));
+        const kp = Math.round(C / CPD); // never exceeds pDots.length: C ≤ D / Vd
         pDots.forEach((c, i) => c.setAttribute("opacity", i < kp ? 1 : 0));
-        const kg = Math.min(gDots.length, Math.round(inGut / APD));
+        const kg = Math.round(inGut / APD);
         gDots.forEach((c, i) => c.setAttribute("opacity", i < kg ? 1 : 0));
         gutG.style.display = route === "oral" ? "" : "none";
         layoutKeys(); // hidden text measures 0 wide, so centre after showing
