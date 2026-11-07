@@ -941,9 +941,9 @@
         stat("sCl", `${fmt(CL)} L/h`);
         stat("sAuc", `${fmt(((oral ? F : 1) * D) / CL)} mg·h/L`);
         document.getElementById("note").innerHTML = oral
-          ? `Dose (<i>D</i>) = ${D} mg by mouth; <i>F</i>·<i>D</i> = ${fmt(F * D)} mg reaches the systemic circulation.` +
+          ? `Dose (<i>D</i>) = ${D} mg by mouth; <i>F</i>·<i>D</i> = ${fmt(F * D)} mg reaches plasma.` +
             (ka < ke
-              ? " <i>k</i><sub>a</sub> &lt; <i>k</i><sub>e</sub> (flip-flop kinetics): the terminal slope reflects absorption, not elimination."
+              ? "<br><i>k</i><sub>a</sub> &lt; <i>k</i><sub>e</sub> (flip-flop kinetics): the terminal slope reflects absorption, not elimination."
               : "")
           : `Dose (<i>D</i>) = ${D} mg`;
 
