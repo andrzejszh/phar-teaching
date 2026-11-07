@@ -107,6 +107,9 @@
       label > span:first-child {
         font-style: italic;
       }
+      label > span:first-child sub {
+        font-style: normal; /* descriptive subscripts are upright (SI) */
+      }
       label > span:last-child {
         text-align: right;
         font-weight: 600;
@@ -204,7 +207,7 @@
       }
       .alabel {
         fill: var(--muted);
-        font: italic 14px var(--serif);
+        font: 14px var(--serif);
         text-anchor: middle;
       }
       .curve {
@@ -679,8 +682,8 @@
         }
         s += `<line class="axis" x1="${G.x0}" x2="${G.x1}" y1="${G.y0}" y2="${G.y0}"/>`;
         s += `<line class="axis" x1="${G.x0}" x2="${G.x0}" y1="${G.y0}" y2="${G.y1}"/>`;
-        s += `<text class="alabel" x="${(G.x0 + G.x1) / 2}" y="${G.y0 + 40}">t (h)</text>`;
-        s += `<text class="alabel" transform="translate(13 ${(G.y0 + G.y1) / 2}) rotate(-90)">C<tspan baseline-shift="sub" font-size="10">p</tspan><tspan baseline-shift="baseline"> (mg/L)</tspan></text>`;
+        s += `<text class="alabel" x="${(G.x0 + G.x1) / 2}" y="${G.y0 + 40}"><tspan font-style="italic">t</tspan> (h)</text>`;
+        s += `<text class="alabel" transform="translate(13 ${(G.y0 + G.y1) / 2}) rotate(-90)"><tspan font-style="italic">C</tspan><tspan baseline-shift="sub" font-size="10">p</tspan><tspan baseline-shift="baseline"> (mg/L)</tspan></text>`;
 
         // elimination half-life guide, read off the IV curve (the dashed reference
         // in oral mode): time for C0 = D/Vd to fall to C0/2. Same ke for both routes.
@@ -689,7 +692,7 @@
           const gx = sx(th),
             gy = sy(D / V / 2);
           s += `<path class="guide" d="M${G.x0},${gy} H${gx} V${G.y0}"/>`;
-          s += `<text class="guidel" x="${gx + 5}" y="${G.y0 - 7}">t<tspan baseline-shift="sub" font-size="9">½</tspan></text>`;
+          s += `<text class="guidel" x="${gx + 5}" y="${G.y0 - 7}"><tspan font-style="italic">t</tspan><tspan baseline-shift="sub" font-size="9">½</tspan></text>`;
         }
         if (route === "iv") {
           s += `<path class="curve" d="${path((x) => conc(x, "iv", ka, ke, V))}"/>`;
@@ -836,19 +839,19 @@
       dotKey(Q.x + Q.w / 2, Q.y + Q.w + 24, 5.5, `= ${APD} mg`, gutG);
       el("line", { class: "flow", x1: Q.x + Q.w + 8, x2: P.x - 8, y1: MID, y2: MID, "marker-end": "url(#fh)" }, gutG);
       const kaT = el("text", { class: "rate", x: (Q.x + Q.w + P.x) / 2, y: MID - 12 }, gutG);
-      kaT.innerHTML = `k<tspan baseline-shift="sub" font-size="11">a</tspan>`;
+      kaT.innerHTML = `k<tspan baseline-shift="sub" font-size="11" font-style="normal">a</tspan>`;
 
       // IV bolus (IV only)
       const ivG = el("g", {});
       el("line", { class: "flow", x1: 40, x2: P.x - 8, y1: MID, y2: MID, "marker-end": "url(#fh)" }, ivG);
       el("text", { class: "zone mid", x: 105, y: MID - 14 }, ivG).textContent = "IV bolus";
-      el("text", { class: "cap", x: 105, y: MID + 24 }, ivG).textContent = `Dose D = ${D} mg`;
+      el("text", { class: "cap", x: 105, y: MID + 24 }, ivG).innerHTML = `<tspan font-style="italic">D</tspan> = ${D} mg`;
 
       // elimination
       const EX = P.x + P.w;
       el("line", { class: "flow", x1: EX + 8, x2: 584, y1: MID, y2: MID, "marker-end": "url(#fh)" });
       const keT = el("text", { class: "rate", x: (EX + 584) / 2, y: MID - 12 });
-      keT.innerHTML = `k<tspan baseline-shift="sub" font-size="11">e</tspan>`;
+      keT.innerHTML = `k<tspan baseline-shift="sub" font-size="11" font-style="normal">e</tspan>`;
       el("text", { class: "zone mid", x: (EX + 584) / 2, y: MID + 30 }).textContent = "Eliminated";
       const eEl = el("text", { class: "count mid", x: (EX + 584) / 2, y: MID + 52 });
 
@@ -896,11 +899,11 @@
           KE = fix(ke, 2);
         let tex;
         if (!oral) {
-          tex = `\\begin{aligned} C_p(t) &= \\frac{D}{V_d}\\,e^{-k_e t} \\\\[0.6em] &= \\frac{${D}}{${V}}\\,e^{-${KE}\\times${T}} \\\\[0.6em] &= \\mathbf{${fmt(C)}}\\ \\text{mg/L} \\end{aligned}`;
+          tex = `\\begin{aligned} C_\\mathrm{p}(t) &= \\frac{D}{V_\\mathrm{d}}\\,\\mathrm{e}^{-k_\\mathrm{e} t} \\\\[0.6em] &= \\frac{${D}}{${V}}\\,\\mathrm{e}^{-${KE}\\times${T}} \\\\[0.6em] &= \\mathbf{${fmt(C)}}\\ \\text{mg/L} \\end{aligned}`;
         } else if (Math.abs(ka - ke) < SAME) {
-          tex = `\\begin{aligned} C_p(t) &= \\frac{F D\\,k\\,t}{V_d}\\,e^{-k t} \\quad (k_a = k_e = k) \\\\[0.6em] &= \\frac{(${fix(F, 2)})(${D})(${KE})(${T})}{${V}}\\,e^{-${KE}\\times${T}} \\\\[0.6em] &= \\mathbf{${fmt(C)}}\\ \\text{mg/L} \\end{aligned}`;
+          tex = `\\begin{aligned} C_\\mathrm{p}(t) &= \\frac{F D\\,k\\,t}{V_\\mathrm{d}}\\,\\mathrm{e}^{-k t} \\quad (k_\\mathrm{a} = k_\\mathrm{e} = k) \\\\[0.6em] &= \\frac{(${fix(F, 2)})(${D})(${KE})(${T})}{${V}}\\,\\mathrm{e}^{-${KE}\\times${T}} \\\\[0.6em] &= \\mathbf{${fmt(C)}}\\ \\text{mg/L} \\end{aligned}`;
         } else {
-          tex = `\\begin{aligned} C_p(t) &= \\frac{F D\\,k_a}{V_d\\,(k_a - k_e)}\\left(e^{-k_e t} - e^{-k_a t}\\right) \\\\[0.6em] &= \\frac{(${fix(F, 2)})(${D})(${KA})}{${V}\\,(${KA} - ${KE})}\\left(e^{-${KE}\\times${T}} - e^{-${KA}\\times${T}}\\right) \\\\[0.6em] &= \\mathbf{${fmt(C)}}\\ \\text{mg/L} \\end{aligned}`;
+          tex = `\\begin{aligned} C_\\mathrm{p}(t) &= \\frac{F D\\,k_\\mathrm{a}}{V_\\mathrm{d}\\,(k_\\mathrm{a} - k_\\mathrm{e})}\\left(\\mathrm{e}^{-k_\\mathrm{e} t} - \\mathrm{e}^{-k_\\mathrm{a} t}\\right) \\\\[0.6em] &= \\frac{(${fix(F, 2)})(${D})(${KA})}{${V}\\,(${KA} - ${KE})}\\left(\\mathrm{e}^{-${KE}\\times${T}} - \\mathrm{e}^{-${KA}\\times${T}}\\right) \\\\[0.6em] &= \\mathbf{${fmt(C)}}\\ \\text{mg/L} \\end{aligned}`;
         }
         katex.render(tex, document.getElementById("eq"), {
           displayMode: true,
@@ -911,12 +914,12 @@
         stat("sHalf", `${fmt(Math.LN2 / ke)} h`);
         stat("sCl", `${fmt(CL)} L/h`);
         stat("sAuc", `${fmt(((oral ? F : 1) * D) / CL)} mg·h/L`);
-        document.getElementById("note").textContent = oral
-          ? `Dose D = ${D} mg by mouth; F·D = ${fmt(F * D)} mg reaches the systemic circulation.` +
+        document.getElementById("note").innerHTML = oral
+          ? `Dose (<i>D</i>) = ${D} mg by mouth; <i>F</i>·<i>D</i> = ${fmt(F * D)} mg reaches the systemic circulation.` +
             (ka < ke
-              ? " Here kₐ < kₑ (flip-flop): the terminal slope reflects absorption, not elimination."
+              ? " Here <i>k</i><sub>a</sub> &lt; <i>k</i><sub>e</sub> (flip-flop): the terminal slope reflects absorption, not elimination."
               : "")
-          : `Dose D = ${D} mg`;
+          : `Dose (<i>D</i>) = ${D} mg`;
 
         // legend: in oral mode the IV curve becomes the dashed reference
         document.getElementById("lgOral").hidden = !oral;
