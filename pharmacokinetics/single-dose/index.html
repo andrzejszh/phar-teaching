@@ -584,8 +584,9 @@
       let F = 0.7; // oral bioavailability, set by its slider
       const D = 100, // dose, mg
         TMAX = 24, // h shown on the x-axis
-        CPD = 0.2, // mg/L per plasma dot
-        APD = 4; // mg per gut dot
+        MPD = 1, // mg of drug per dot, the same in every box
+        VP = 3, // L, plasma volume (typical adult): the part of Vd the plasma box shows
+        DOT_R = 5.5; // same dot size everywhere, since a dot means the same everywhere
 
       let tNow = 2; // h, set by dragging across the graph
       const kaEl = document.getElementById("ka"),
@@ -809,8 +810,10 @@
 
       const MID = 215; // vertical centre of the compartments
       // plasma: the single compartment, apparent volume Vd
-      const P = { x: 186, y: MID - 124, w: 248 };
-      el("text", { class: "zone", x: P.x, y: P.y - 12 }).textContent = "Plasma";
+      // fixed layout, identical for iv and oral: only the gut (or the iv arrow) swaps in
+      const Q = { x: 16, y: MID - 75, w: 150 }, // gut
+        P = { x: 214, y: MID - 120, w: 240 }; // plasma
+      el("text", { class: "zone", x: P.x, y: P.y - 12 }).textContent = `Plasma (${VP} L)`;
       const cEl = el("text", { class: "count", x: P.x + P.w, y: P.y - 11 });
       el("rect", {
         class: "plasma",
@@ -820,10 +823,10 @@
         height: P.w,
         rx: 22,
       });
-      // enough dots for the highest concentration the sliders allow, D / smallest Vd
-      const P_MAX = Math.ceil(D / +vdEl.min / CPD);
-      const pDots = scatter(P.x, P.y, P.w, 22, 6, P_MAX, 22).map((p) =>
-        el("circle", { class: "lig", cx: p.x, cy: p.y, r: 6, opacity: 0 }),
+      // enough dots for the most drug plasma can hold: Cp max = D / smallest Vd, times VP
+      const P_MAX = Math.ceil((D / +vdEl.min) * VP / MPD);
+      const pDots = scatter(P.x, P.y, P.w, 22, DOT_R, P_MAX, 22).map((p) =>
+        el("circle", { class: "lig", cx: p.x, cy: p.y, r: DOT_R, opacity: 0 }),
       );
       // dot key: a sample dot followed by what one dot stands for, centred under its box
       const keys = [];
@@ -842,18 +845,19 @@
           k.t.setAttribute("x", x0 + 2 * k.r + 6);
         }
       }
-      dotKey(P.x + P.w / 2, P.y + P.w + 24, 6, `= ${CPD} mg/L`);
+      dotKey(P.x + P.w / 2, P.y + P.w + 24, DOT_R, `= ${MPD} mg`);
+      // the rest of the drug in the body: same Cp, in the part of Vd that is not plasma
+      const restEl = el("text", { class: "cap", x: P.x + P.w / 2, y: P.y + P.w + 46 });
 
       // gut (oral only)
       const gutG = el("g", {});
-      const Q = { x: 16, y: MID - 56, w: 112 };
       el("text", { class: "zone", x: Q.x, y: Q.y - 12 }, gutG).textContent = "Gut";
       const gEl = el("text", { class: "count", x: Q.x + Q.w, y: Q.y - 11 }, gutG);
       el("rect", { class: "gut", x: Q.x, y: Q.y, width: Q.w, height: Q.w, rx: 16 }, gutG);
-      const gDots = scatter(Q.x, Q.y, Q.w, 16, 5.5, Math.ceil(D / APD), 5).map((p) =>
-        el("circle", { class: "lig", cx: p.x, cy: p.y, r: 5.5, opacity: 0 }, gutG),
+      const gDots = scatter(Q.x, Q.y, Q.w, 16, DOT_R, Math.ceil(D / MPD), 10).map((p) =>
+        el("circle", { class: "lig", cx: p.x, cy: p.y, r: DOT_R, opacity: 0 }, gutG),
       );
-      dotKey(Q.x + Q.w / 2, Q.y + Q.w + 24, 5.5, `= ${APD} mg`, gutG);
+      dotKey(Q.x + Q.w / 2, Q.y + Q.w + 24, DOT_R, `= ${MPD} mg`, gutG);
       el("line", { class: "flow", x1: Q.x + Q.w + 8, x2: P.x - 8, y1: MID, y2: MID, "marker-end": "url(#fh)" }, gutG);
       const kaT = el("text", { class: "rate", x: (Q.x + Q.w + P.x) / 2, y: MID - 12 }, gutG);
       kaT.innerHTML = `k<tspan baseline-shift="sub" font-size="11" font-style="normal">a</tspan>`;
@@ -861,8 +865,8 @@
       // IV bolus (IV only)
       const ivG = el("g", {});
       el("line", { class: "flow", x1: 40, x2: P.x - 8, y1: MID, y2: MID, "marker-end": "url(#fh)" }, ivG);
-      el("text", { class: "zone mid", x: 105, y: MID - 14 }, ivG).textContent = "IV bolus";
-      el("text", { class: "cap", x: 105, y: MID + 24 }, ivG).innerHTML = `<tspan font-style="italic">D</tspan> = ${D} mg`;
+      el("text", { class: "zone mid", x: 120, y: MID - 14 }, ivG).textContent = "IV bolus";
+      el("text", { class: "cap", x: 120, y: MID + 24 }, ivG).innerHTML = `<tspan font-style="italic">D</tspan> = ${D} mg`;
 
       // elimination
       const EX = P.x + P.w;
@@ -877,14 +881,15 @@
         const inGut = route === "oral" ? gutAmt(t, ka) : 0;
         const given = route === "oral" ? F * D : D;
         const elim = Math.max(0, given - inGut - C * V); // mass balance
-        const kp = Math.round(C / CPD); // never exceeds pDots.length: C ≤ D / Vd
+        const kp = Math.round((C * VP) / MPD); // drug in plasma; never exceeds pDots.length
         pDots.forEach((c, i) => c.setAttribute("opacity", i < kp ? 1 : 0));
-        const kg = Math.round(inGut / APD);
+        const kg = Math.round(inGut / MPD);
         gDots.forEach((c, i) => c.setAttribute("opacity", i < kg ? 1 : 0));
         gutG.style.display = route === "oral" ? "" : "none";
         layoutKeys(); // hidden text measures 0 wide, so centre after showing
         ivG.style.display = route === "iv" ? "" : "none";
         cEl.textContent = `${fmt(C)} mg/L`;
+        restEl.innerHTML = `${fmtMass(C * (V - VP))} elsewhere in <tspan font-style="italic">V</tspan><tspan baseline-shift="sub" font-size="9">d</tspan>`;
         gEl.textContent = fmtMass(inGut);
         // eliminated is a difference of near-equal numbers early on: treat rounding noise as 0
         eEl.textContent = fmtMass(elim < 1e-9 * given ? 0 : elim);
