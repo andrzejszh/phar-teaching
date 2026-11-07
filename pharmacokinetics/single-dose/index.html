@@ -469,7 +469,7 @@
   <body>
     <main>
       <a class="back" href="../../#pharmacokinetics"><span aria-hidden="true">←</span> Pharmacokinetics</a>
-      <h1>Single-dose Administration</h1>
+      <h1>Single-Dose Administration</h1>
       <div class="grid">
         <div class="left">
           <div class="view" role="group" aria-label="Route of administration">
@@ -790,7 +790,24 @@
       const pDots = sites(P.x + 9, P.y + 9, 10, 23, 4).map((p) =>
         el("circle", { class: "lig", cx: p.x, cy: p.y, r: 6, opacity: 0 }),
       );
-      const pCap = el("text", { class: "cap", x: P.x + P.w / 2, y: P.y + P.w + 22 });
+      // dot key: a sample dot followed by what one dot stands for, centred under its box
+      const keys = [];
+      function dotKey(cx, y, r, label, parent) {
+        const g = el("g", {}, parent);
+        const c = el("circle", { class: "lig", cy: y - 4, r }, g);
+        const t = el("text", { class: "cap", y, style: "text-anchor: start" }, g);
+        t.textContent = label;
+        keys.push({ cx, r, c, t });
+      }
+      function layoutKeys() {
+        for (const k of keys) {
+          const w = 2 * k.r + 6 + k.t.getComputedTextLength(),
+            x0 = k.cx - w / 2;
+          k.c.setAttribute("cx", x0 + k.r);
+          k.t.setAttribute("x", x0 + 2 * k.r + 6);
+        }
+      }
+      dotKey(P.x + P.w / 2, P.y + P.w + 24, 6, `= ${CPD} mg/L`);
 
       // gut (oral only)
       const gutG = el("g", {});
@@ -801,8 +818,7 @@
       const gDots = sites(Q.x + 6, Q.y + 6, 5, 20, 3).map((p) =>
         el("circle", { class: "lig", cx: p.x, cy: p.y, r: 5.5, opacity: 0 }, gutG),
       );
-      el("text", { class: "cap", x: Q.x + Q.w / 2, y: Q.y + Q.w + 22 }, gutG).textContent =
-        `1 dot = ${APD} mg`;
+      dotKey(Q.x + Q.w / 2, Q.y + Q.w + 24, 5.5, `= ${APD} mg`, gutG);
       el("line", { class: "flow", x1: Q.x + Q.w + 8, x2: P.x - 8, y1: MID, y2: MID, "marker-end": "url(#fh)" }, gutG);
       const kaT = el("text", { class: "rate", x: (Q.x + Q.w + P.x) / 2, y: MID - 12 }, gutG);
       kaT.innerHTML = `k<tspan baseline-shift="sub" font-size="11">a</tspan>`;
@@ -831,11 +847,11 @@
         const kg = Math.min(gDots.length, Math.round(inGut / APD));
         gDots.forEach((c, i) => c.setAttribute("opacity", i < kg ? 1 : 0));
         gutG.style.display = route === "oral" ? "" : "none";
+        layoutKeys(); // hidden text measures 0 wide, so centre after showing
         ivG.style.display = route === "iv" ? "" : "none";
         cEl.textContent = `${fmt(C)} mg/L`;
         gEl.textContent = `${fmt(inGut)} mg`;
         eEl.textContent = `${fmt(elim)} mg`;
-        pCap.textContent = `1 dot = ${CPD} mg/L`;
       }
 
       // ---------- Render ----------
@@ -914,6 +930,7 @@
       scale = SCALES.lin;
       scaleBtns.forEach((b) => b.setAttribute("aria-pressed", b.dataset.scale === "lin"));
       setRoute("iv");
+      if (document.fonts) document.fonts.ready.then(layoutKeys);
     </script>
   </body>
 </html>
