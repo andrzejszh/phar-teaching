@@ -513,7 +513,7 @@
             </div>
             <div class="xscale" role="group" aria-label="y-axis scale">
               <button type="button" data-scale="lin">Linear</button
-              ><button type="button" data-scale="log">Log</button>
+              ><button type="button" data-scale="ln">ln</button>
             </div>
           </div>
           <div class="sliders">
@@ -627,17 +627,15 @@
           max: 22,
           to: (c) => c,
           ticks: [0, 5, 10, 15, 20].map((v) => [v, v]),
+          label: `<tspan font-style="italic">C</tspan><tspan baseline-shift="sub" font-size="10">p</tspan><tspan baseline-shift="baseline"> (mg/L)</tspan>`,
         },
-        log: {
-          min: -2,
-          max: 1.5,
-          to: (c) => Math.log10(Math.max(c, 1e-9)),
-          ticks: [
-            [-2, "0.01"],
-            [-1, "0.1"],
-            [0, "1"],
-            [1, "10"],
-          ],
+        // natural log, so a straight elimination phase has slope −ke
+        ln: {
+          min: -5,
+          max: 3.5,
+          to: (c) => Math.log(Math.max(c, 1e-12)),
+          ticks: [-4, -2, 0, 2].map((v) => [v, String(v).replace("-", "−")]),
+          label: `ln(<tspan font-style="italic">C</tspan><tspan baseline-shift="sub" font-size="10">p</tspan><tspan baseline-shift="baseline"> / (mg/L))</tspan>`,
         },
       };
       let scale = SCALES.lin;
@@ -696,7 +694,7 @@
         s += `<line class="axis" x1="${G.x0}" x2="${G.x1}" y1="${G.y0}" y2="${G.y0}"/>`;
         s += `<line class="axis" x1="${G.x0}" x2="${G.x0}" y1="${G.y0}" y2="${G.y1}"/>`;
         s += `<text class="alabel" x="${(G.x0 + G.x1) / 2}" y="${G.y0 + 40}"><tspan font-style="italic">t</tspan> (h)</text>`;
-        s += `<text class="alabel" transform="translate(13 ${(G.y0 + G.y1) / 2}) rotate(-90)"><tspan font-style="italic">C</tspan><tspan baseline-shift="sub" font-size="10">p</tspan><tspan baseline-shift="baseline"> (mg/L)</tspan></text>`;
+        s += `<text class="alabel" transform="translate(13 ${(G.y0 + G.y1) / 2}) rotate(-90)">${scale.label}</text>`;
 
         // elimination half-life guide, read off the IV curve (the dashed reference
         // in oral mode): time for C0 = D/Vd to fall to C0/2. Same ke for both routes.
