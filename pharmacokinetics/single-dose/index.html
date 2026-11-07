@@ -615,8 +615,10 @@
           (Math.exp(-ke * t) - Math.exp(-ka * t))
         );
       }
-      // amount still in the gut (mg)
-      const gutAmt = (t, ka) => F * D * Math.exp(-ka * t);
+      // amount still in the gut (mg). The gut holds the whole dose at t = 0 and empties at ka; only the fraction F of what
+      // leaves reaches the systemic circulation (the rest is lost on the way: unabsorbed, or
+      // metabolised in the gut wall or liver on first pass), so F is applied after the gut
+      const gutAmt = (t, ka) => D * Math.exp(-ka * t);
 
       // ---------- y-axis scales ----------
       const SCALES = {
@@ -876,8 +878,10 @@
       function drawSchematic(t, ka, ke, V) {
         const C = conc(t, route, ka, ke, V);
         const inGut = route === "oral" ? gutAmt(t, ka) : 0;
-        const given = route === "oral" ? F * D : D;
-        const elim = Math.max(0, given - inGut - C * V); // mass balance
+        // drug that has reached the systemic circulation so far: all of it for iv;
+        // for oral, the fraction F of what has left the gut
+        const given = route === "oral" ? F * (D - inGut) : D;
+        const elim = Math.max(0, given - C * V); // mass balance; first-pass loss not drawn
         const kp = Math.round((C * VP) / MPD); // drug in plasma; never exceeds pDots.length
         pDots.forEach((c, i) => c.setAttribute("opacity", i < kp ? 1 : 0));
         const kg = Math.round(inGut / MPD);
@@ -888,7 +892,7 @@
         restEl.textContent = fmtMass(C * (V - VP));
         gEl.textContent = fmtMass(inGut);
         // eliminated is a difference of near-equal numbers early on: treat rounding noise as 0
-        eEl.textContent = fmtMass(elim < 1e-9 * given ? 0 : elim);
+        eEl.textContent = fmtMass(elim < 1e-9 * D ? 0 : elim);
       }
 
       // ---------- Render ----------
