@@ -822,7 +822,7 @@
       // plasma: the single compartment, apparent volume Vd
       // fixed layout, identical for iv and oral: only the gut (or the iv arrow) swaps in
       const P = { x: 214, y: MID - 120, w: 240 }, // plasma
-        Q = { x: 16, y: P.y, w: 100, h: P.w }; // gut: as tall as plasma, narrower, leaving room for "Lost"
+        Q = { x: 16, y: P.y, w: 100, h: P.w }; // gut: as tall as plasma, narrower
       el("text", { class: "zone", x: P.x, y: P.y - 12 }).textContent = "Plasma";
       const cEl = el("text", { class: "count", x: P.x + P.w, y: P.y - 11 });
       el("rect", {
@@ -858,10 +858,6 @@
       );
       el("line", { class: "flow", x1: Q.x + Q.w + 8, x2: P.x - 8, y1: MID, y2: MID, "marker-end": "url(#fh)" }, gutG);
       const kaT = el("text", { class: "rate", x: (Q.x + Q.w + P.x) / 2, y: MID - 12 }, gutG);
-      // drug lost between gut and systemic circulation (1 − F of what leaves the gut),
-      // labelled like "Eliminated"
-      el("text", { class: "zone mid", x: (Q.x + Q.w + P.x) / 2, y: MID + 30 }, gutG).textContent = "Lost";
-      const lEl = el("text", { class: "count mid", x: (Q.x + Q.w + P.x) / 2, y: MID + 52 }, gutG);
       kaT.innerHTML = `k<tspan baseline-shift="sub" font-size="11" font-style="normal">a</tspan>`;
 
       // IV bolus (IV only)
@@ -896,7 +892,6 @@
         gEl.textContent = fmtMass(inGut);
         // eliminated is a difference of near-equal numbers early on: treat rounding noise as 0
         eEl.textContent = fmtMass(elim < 1e-9 * D ? 0 : elim);
-        lEl.textContent = fmtMass(route === "oral" ? (1 - F) * (D - inGut) : 0);
       }
 
       // ---------- Render ----------
