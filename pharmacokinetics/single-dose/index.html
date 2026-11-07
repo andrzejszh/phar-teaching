@@ -392,6 +392,13 @@
         font: italic 15px var(--serif);
         text-anchor: middle;
       }
+      .cap .num {
+        /* the amount reads like the figures above the boxes */
+        fill: var(--ink);
+        font-weight: 600;
+        font-size: 15px;
+        font-variant-numeric: tabular-nums;
+      }
       .key {
         fill: var(--muted);
         font: 14px var(--serif);
@@ -822,7 +829,7 @@
       // fixed layout, identical for iv and oral: only the gut (or the iv arrow) swaps in
       const Q = { x: 16, y: MID - 75, w: 150 }, // gut
         P = { x: 214, y: MID - 120, w: 240 }; // plasma
-      el("text", { class: "zone", x: P.x, y: P.y - 12 }).textContent = `Plasma (${VP} L)`;
+      el("text", { class: "zone", x: P.x, y: P.y - 12 }).textContent = "Plasma";
       const cEl = el("text", { class: "count", x: P.x + P.w, y: P.y - 11 });
       el("rect", {
         class: "plasma",
@@ -881,7 +888,7 @@
         gutG.style.display = route === "oral" ? "" : "none";
         ivG.style.display = route === "iv" ? "" : "none";
         cEl.textContent = `${fmt(C)} mg/L`;
-        restEl.textContent = `${fmtMass(C * (V - VP))} outside plasma`;
+        restEl.innerHTML = `<tspan class="num">${fmtMass(C * (V - VP))}</tspan> outside plasma`;
         gEl.textContent = fmtMass(inGut);
         // eliminated is a difference of near-equal numbers early on: treat rounding noise as 0
         eEl.textContent = fmtMass(elim < 1e-9 * given ? 0 : elim);
