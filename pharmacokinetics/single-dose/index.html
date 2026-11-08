@@ -562,15 +562,15 @@
           <div class="formula" id="eq"></div>
           <div class="stats" aria-live="polite">
             <div>
-              <span class="k"><i>t</i><sub>½</sub> = ln 2 / <i>k</i><sub>e</sub></span>
+              <span class="k"><i>t</i><sub>½</sub></span>
               <span class="v" id="sHalf"></span>
             </div>
             <div>
-              <span class="k">CL = <i>k</i><sub>e</sub> <i>V</i><sub>d</sub></span>
+              <span class="k">CL</span>
               <span class="v" id="sCl"></span>
             </div>
             <div>
-              <span class="k">AUC<sub>0–∞</sub> = <i>F</i><i>D</i> / CL</span>
+              <span class="k">AUC<sub>0–∞</sub></span>
               <span class="v" id="sAuc"></span>
             </div>
           </div>
@@ -857,6 +857,11 @@
       el("line", { class: "flow", x1: Q.x + Q.w + 8, x2: P.x - 8, y1: MID, y2: MID, "marker-end": "url(#fh)" }, gutG);
       const kaT = el("text", { class: "rate", x: (Q.x + Q.w + P.x) / 2, y: MID - 12 }, gutG);
       kaT.innerHTML = `k<tspan baseline-shift="sub" font-size="11" font-style="normal">a</tspan>`;
+      // dose details under the gut box, as under the iv arrow
+      const QX = Q.x + Q.w / 2,
+        QB = Q.y + Q.h;
+      el("text", { class: "cap", x: QX, y: QB + 24 }, gutG).innerHTML = `<tspan font-style="italic">D</tspan> = ${D} mg`;
+      const fdCap = el("text", { class: "cap", x: QX, y: QB + 42 }, gutG);
 
       // IV bolus (IV only)
       const ivG = el("g", {});
@@ -888,6 +893,7 @@
         cEl.textContent = fmtMass(C * VP); // amount in plasma
         restEl.textContent = fmtMass(C * (V - VP));
         gEl.textContent = fmtMass(inGut);
+        fdCap.innerHTML = `<tspan font-style="italic">F</tspan>·<tspan font-style="italic">D</tspan> = ${fmt(F * D)} mg`;
         // eliminated is a difference of near-equal numbers early on: treat rounding noise as 0
         eEl.textContent = fmtMass(elim < 1e-9 * D ? 0 : elim);
       }
@@ -933,12 +939,11 @@
         stat("sHalf", `${fmt(Math.LN2 / ke)} h`);
         stat("sCl", `${fmt(CL)} L/h`);
         stat("sAuc", `${fmt(((oral ? F : 1) * D) / CL)} mg·h/L`);
-        document.getElementById("note").innerHTML = oral
-          ? `Dose (<i>D</i>) = ${D} mg by mouth; <i>F</i>·<i>D</i> = ${fmt(F * D)} mg reaches plasma.` +
-            (ka < ke
-              ? "<br><i>k</i><sub>a</sub> &lt; <i>k</i><sub>e</sub> (flip-flop kinetics): the terminal slope reflects absorption, not elimination."
-              : "")
-          : `Dose (<i>D</i>) = ${D} mg`;
+        // only the flip-flop warning remains here; the dose is given in the schematic
+        const noteEl = document.getElementById("note"),
+          flip = oral && ka < ke;
+        noteEl.hidden = !flip;
+        noteEl.innerHTML = flip ? "<i>k</i><sub>a</sub> &lt; <i>k</i><sub>e</sub> (flip-flop kinetics): the terminal slope reflects absorption, not elimination." : "";
 
         // legend: in oral mode the IV curve becomes the dashed reference
         document.getElementById("lgOral").hidden = !oral;
